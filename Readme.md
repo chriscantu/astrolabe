@@ -76,16 +76,27 @@ module.exports = Page.create({
     username: { get: function() { return this.findElement(this.by.input('username')); } },
     password: { get: function() { return this.findElement(this.by.input('password')); } },
     submit:   { get: function() { return this.findElement(this.by.id('submit')); } },
+    invalid:  { get: function() { return this.findElement(this.by.id('incorrectLogin')); } },
+
+    InvalidLoginException: { get: function() { return this.exception('Invalid Login'); } },
 
     // Adds a signIn method to the page object.
     signIn:   { value: function(username, password) {
 
-        this.go();
+        var page = this;
 
-        this.username.sendKeys(username);
-        this.password.sendKeys(password);
+        page.go();
 
-        this.submit.click();
+        page.username.sendKeys(username);
+        page.password.sendKeys(password);
+
+        page.submit.click();
+
+        return this.invalid.isDisplayed().then(function (wrongLogin) {
+            if (wrongLogin) {
+                page.InvalidLoginException.thro(username + ', ' + password + ' is not valid');
+            }
+        });
     } }
 });
 ```
